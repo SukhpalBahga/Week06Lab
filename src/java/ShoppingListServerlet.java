@@ -1,0 +1,62 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ *
+ * @author Sukhpal
+ */
+@WebServlet(urlPatterns = {"/ShoppingListServerlet"})
+public class ShoppingListServerlet extends HttpServlet {
+
+   @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession s = request.getSession();
+        if (s.getAttribute("user") == null || s.getAttribute("user").equals("")) {
+            getServletContext().getRequestDispatcher("/WEB-INF/register.jsp").forward(request, response);
+        } else if (request.getParameter("action") != null && request.getParameter("action").equals("logout")) {
+            s.setAttribute("user", null);
+            s.setAttribute("list", null);
+            getServletContext().getRequestDispatcher("/WEB-INF/register.jsp").forward(request, response);
+        } else {
+            getServletContext().getRequestDispatcher("/WEB-INF/shoppinglist.jsp").forward(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession s = request.getSession();
+        ArrayList<String> list = (ArrayList<String>) s.getAttribute("list");
+        String action = request.getParameter("action");
+
+        if (action != null) {
+            if (action.equals("register")) {
+                s.setAttribute("user", request.getParameter("username"));
+                getServletContext().getRequestDispatcher("/WEB-INF/shoppinglist.jsp").forward(request, response);
+            } else if (action.equals("add") && request.getParameter("item") != null && !request.getParameter("item").equals("")) {
+                if (list == null) {
+                    list = new ArrayList<String>();
+                    s.setAttribute("list", list);
+                }
+                list.add(request.getParameter("item"));
+                getServletContext().getRequestDispatcher("/WEB-INF/shoppinglist.jsp").forward(request, response);
+            } else if (action.equals("delete") && list.contains(request.getParameter("item"))) {
+                list.remove(request.getParameter("item"));
+                getServletContext().getRequestDispatcher("/WEB-INF/shoppinglist.jsp").forward(request, response);
+            }
+        }
+    }
+}
+
